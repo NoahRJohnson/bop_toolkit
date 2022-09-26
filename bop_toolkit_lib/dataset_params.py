@@ -86,6 +86,8 @@ def get_model_params(datasets_path, dataset_name, model_type=None):
     'hb': list(range(1, 34)),  # Full HB dataset.
     'ycbv': list(range(1, 22)),
     'hope': list(range(1, 29)),
+    'jmas': [0],
+    'synthetic_pbr': [0],
   }[dataset_name]
 
   # ID's of objects with ambiguous views evaluated using the ADI pose error
@@ -104,6 +106,8 @@ def get_model_params(datasets_path, dataset_name, model_type=None):
     'hb': [6, 10, 11, 12, 13, 14, 18, 24, 29],
     'ycbv': [1, 13, 14, 16, 18, 19, 20, 21],
     'hope': None,  # Not defined yet.
+    'jmas': None,
+    'synthetic_pbr': None
   }[dataset_name]
 
   # T-LESS includes two types of object models, CAD and reconstructed.
@@ -373,6 +377,31 @@ def get_split_params(datasets_path, dataset_name, split, split_type=None):
       p['azimuth_range'] = None  # Not calculated yet.
       p['elev_range'] = None  # Not calculated yet.
 
+  # JMAS
+  elif dataset_name == 'jmas':
+    p['scene_ids'] = list(range(1, 735))
+    p['im_size'] = (2560, 1600)
+
+    if split == 'test':
+      # todo
+      p['depth_range'] = (0.0, 0.0)
+      p['azimuth_range'] = (0, 0)
+      p['elev_range'] = (0, 0)
+
+  # synthetic PBR images created by VSI
+  elif dataset_name == 'synthetic_pbr':
+    p['scene_ids'] = {
+      'train': list(range(400)),
+      'test': list(range(1000, 1040))
+    }[split]
+    p['im_size'] = (1500, 1500)
+
+    if split == 'test':
+      # todo
+      p['depth_range'] = (0.0, 0.0)
+      p['azimuth_range'] = (0, 0)
+      p['elev_range'] = (0, 0)
+
   else:
     raise ValueError('Unknown BOP dataset ({}).'.format(dataset_name))
 
@@ -398,7 +427,7 @@ def get_split_params(datasets_path, dataset_name, split, split_type=None):
     # Path template to a file with meta information about the GT annotations.
     'scene_gt_info_tpath': join(
       split_path, '{scene_id:06d}', 'scene_gt_info.json'),
-    
+
     # Path template to a file with the coco GT annotations.
     'scene_gt_coco_tpath': join(
       split_path, '{scene_id:06d}', 'scene_gt_coco.json'),
