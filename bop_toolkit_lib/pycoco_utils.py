@@ -106,7 +106,10 @@ def merge_coco_annotations(existing_coco_annotations, new_coco_annotations):
             existing_coco_annotations["categories"].append(cat_dict)
 
     # Concatenate images sections
-    image_id_offset = max([image["id"] for image in existing_coco_annotations["images"]]) + 1
+    if len(existing_coco_annotations["images"]) > 0:
+        image_id_offset = max([image["id"] for image in existing_coco_annotations["images"]]) + 1
+    else:
+        image_id_offset = 0
     for image in new_coco_annotations["images"]:
         image["id"] += image_id_offset
     existing_coco_annotations["images"].extend(new_coco_annotations["images"])

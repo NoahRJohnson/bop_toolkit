@@ -22,7 +22,7 @@ p = {
   'dataset': 'synthetic_pbr',
 
   # Dataset split. Options: 'train', 'test'.
-  'dataset_split': 'train',
+  'dataset_split': 'test',
 
   # Dataset split type. Options: 'synt', 'real', None = default. See dataset_params.py for options.
   'dataset_split_type': None,
