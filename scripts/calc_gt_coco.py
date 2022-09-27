@@ -25,7 +25,7 @@ p = {
   'dataset_split': 'train',
 
   # Dataset split type. Options: 'synt', 'real', None = default. See dataset_params.py for options.
-  'dataset_split_type': 'pbr',
+  'dataset_split_type': None,
 
   # bbox type. Options: 'modal', 'amodal'.
   'bbox_type': 'amodal',
