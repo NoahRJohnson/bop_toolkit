@@ -194,7 +194,7 @@ def binary_mask_to_rle(binary_mask):
     :param binary_mask: a 2D binary numpy array where '1's represent the object
     :return: Mask in RLE format
     """
-    rle = {'counts': [], 'size': list(binary_mask.shape)}
+    rle = {'counts': [], 'size': list(binary_mask.shape[:2])}
     counts = rle.get('counts')
     for i, (value, elements) in enumerate(groupby(binary_mask.ravel(order='F'))):
         if i == 0 and value == 1:
