@@ -48,15 +48,6 @@ def create_annotation_info(annotation_id, image_id, object_id, binary_mask, boun
     area = binary_mask.sum()
     if area < 1:
         return None
-    
-    if mask_encoding_format == 'rle':
-        segmentation = binary_mask_to_rle(binary_mask)
-    elif mask_encoding_format == 'polygon':
-        segmentation = binary_mask_to_polygon(binary_mask, tolerance)
-        if not segmentation:
-            return None
-    else:
-        raise RuntimeError("Unknown encoding format: {}".format(mask_encoding_format))
 
     annotation_info = {
         "id": annotation_id,
@@ -65,13 +56,25 @@ def create_annotation_info(annotation_id, image_id, object_id, binary_mask, boun
         "iscrowd": 0,
         "area": int(area),
         "bbox": bounding_box,
-        "segmentation": segmentation,
         "width": binary_mask.shape[1],
         "height": binary_mask.shape[0]
     }
+
     if ignore is not None:
         annotation_info["ignore"] = ignore
-    
+
+    if mask_encoding_format == 'rle':
+        annotation_info['segmentation'] = binary_mask_to_rle(binary_mask)
+    elif mask_encoding_format == 'polygon':
+        segmentation = binary_mask_to_polygon(binary_mask, tolerance)
+        if not segmentation:
+            return None
+        annotation_info['segmentation'] = segmentation
+    elif mask_encoding_format is None:
+        pass  # no segmentation
+    else:
+        raise RuntimeError("Unknown encoding format: {}".format(mask_encoding_format))
+
     return annotation_info
 
 

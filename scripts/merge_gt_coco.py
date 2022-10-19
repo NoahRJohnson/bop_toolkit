@@ -76,8 +76,12 @@ for scene_id in dp_split['scene_ids']:
     coco_gt_path = coco_gt_path.replace('scene_gt_coco', 'scene_gt_coco_modal')
 
   # load coco annotation dictionary
-  with open(coco_gt_path, 'r') as fp:
-    coco_scene_dict = json.load(fp)
+  try:
+    with open(coco_gt_path, 'r') as fp:
+      coco_scene_dict = json.load(fp)
+  except FileNotFoundError:
+    misc.log(f"Scene ID {scene_id} missing")
+    continue
 
   # change file paths to use new image root
   for i in range(len(coco_scene_dict['images'])):

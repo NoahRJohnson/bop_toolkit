@@ -33,6 +33,7 @@ p = {
   # Folder containing the BOP datasets.
   'datasets_path': config.datasets_path,
 
+  'include_segmentation': False,
 }
 ################################################################################
 
@@ -41,6 +42,7 @@ dataset_name = p['dataset']
 split = p['dataset_split']
 split_type = p['dataset_split_type']
 bbox_type = p['bbox_type']
+include_segmentation = p['include_segmentation']
 
 dp_split = dataset_params.get_split_params(datasets_path, dataset_name, split, split_type=split_type)
 dp_model = dataset_params.get_model_params(datasets_path, dataset_name)
@@ -71,8 +73,13 @@ for scene_id in dp_split['scene_ids']:
     }
 
     # Load info about the GT poses (e.g. visibility) for the current scene.
-    scene_gt = inout.load_scene_gt(dp_split['scene_gt_tpath'].format(scene_id=scene_id))
-    scene_gt_info = inout.load_json(dp_split['scene_gt_info_tpath'].format(scene_id=scene_id), keys_to_int=True)
+    try:
+        scene_gt = inout.load_scene_gt(dp_split['scene_gt_tpath'].format(scene_id=scene_id))
+        scene_gt_info = inout.load_json(dp_split['scene_gt_info_tpath'].format(scene_id=scene_id), keys_to_int=True)
+    except FileNotFoundError:
+        misc.log(f"Scene ID {scene_id} missing")
+        continue
+
     # Output coco path
     coco_gt_path = dp_split['scene_gt_coco_tpath'].format(scene_id=scene_id)
     if bbox_type == 'modal':
@@ -113,7 +120,7 @@ for scene_id in dp_split['scene_ids']:
                 raise Exception('{} is not a valid bounding box type'.format(p['bbox_type']))
 
             annotation_info = pycoco_utils.create_annotation_info(
-                segmentation_id, im_id, category_info, binary_inst_mask_visib, bounding_box, tolerance=2, ignore=ignore_gt)
+                segmentation_id, im_id, category_info, binary_inst_mask_visib, bounding_box, mask_encoding_format='rle' if include_segmentation else None, tolerance=2, ignore=ignore_gt)
 
             if annotation_info is not None:
                 coco_scene_output["annotations"].append(annotation_info)
