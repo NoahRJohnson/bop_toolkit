@@ -175,7 +175,7 @@ def get_split_params(datasets_path, dataset_name, split, split_type=None):
   elif dataset_name == 'itodd':
     gray_ext = '.tif'
     depth_ext = '.tif'
-  elif dataset_name == 'synthetic_pbr' or dataset_name == 'jmas':
+  elif dataset_name == 'synthetic_pbr':
     rgb_ext = '.jpg'
 
   p['im_modalities'] = ['rgb', 'depth']

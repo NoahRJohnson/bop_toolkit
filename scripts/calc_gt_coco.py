@@ -8,6 +8,8 @@ import os
 import datetime
 import json
 
+from pathlib import Path
+
 from bop_toolkit_lib import pycoco_utils
 from bop_toolkit_lib import config
 from bop_toolkit_lib import dataset_params
@@ -19,7 +21,7 @@ from bop_toolkit_lib import misc
 ################################################################################
 p = {
   # See dataset_params.py for options.
-  'dataset': 'synthetic_pbr',
+  'dataset': 'jmas',
 
   # Dataset split. Options: 'train', 'test'.
   'dataset_split': 'train',
@@ -100,27 +102,48 @@ for scene_id in dp_split['scene_ids']:
         # Go through each instance in view
         for idx,inst in enumerate(inst_list): 
             category_info = inst['obj_id']
-            visibility = gt_info[idx]['visib_fract']
+            if 'visib_fract' in gt_info[idx].keys():
+                visibility = gt_info[idx]['visib_fract']
+            else:
+                visibility = 1.0
             # Add ignore flag for objects smaller than 10% visible
             ignore_gt = visibility < 0.1
+
             mask_visib_p = dp_split['mask_visib_tpath'].format(scene_id=scene_id, im_id=im_id, gt_id=idx)
             mask_full_p = dp_split['mask_tpath'].format(scene_id=scene_id, im_id=im_id, gt_id=idx)
-            
-            binary_inst_mask_visib = inout.load_depth(mask_visib_p).astype(np.bool)
-            if binary_inst_mask_visib.sum() < 1:
-                continue
-            if bbox_type == 'amodal':
-                binary_inst_mask_full = inout.load_depth(mask_full_p).astype(np.bool)
-                if binary_inst_mask_full.sum() < 1:
-                    continue
-                bounding_box = pycoco_utils.bbox_from_binary_mask(binary_inst_mask_full)
-            elif bbox_type == 'modal':
-                bounding_box = pycoco_utils.bbox_from_binary_mask(binary_inst_mask_visib)
-            else:
-                raise Exception('{} is not a valid bounding box type'.format(p['bbox_type']))
 
-            annotation_info = pycoco_utils.create_annotation_info(
-                segmentation_id, im_id, category_info, binary_inst_mask_visib, bounding_box, mask_encoding_format='rle' if include_segmentation else None, tolerance=2, ignore=ignore_gt)
+            if Path(mask_visib_p).is_file():
+                binary_inst_mask_visib = inout.load_depth(mask_visib_p).astype(np.bool)
+                if binary_inst_mask_visib.sum() < 1:
+                    continue
+
+                if bbox_type == 'amodal':
+                    binary_inst_mask_full = inout.load_depth(mask_full_p).astype(np.bool)
+                    if binary_inst_mask_full.sum() < 1:
+                        continue
+                    bounding_box = pycoco_utils.bbox_from_binary_mask(binary_inst_mask_full)
+                elif bbox_type == 'modal':
+                    bounding_box = pycoco_utils.bbox_from_binary_mask(binary_inst_mask_visib)
+                else:
+                    raise Exception('{} is not a valid bounding box type'.format(p['bbox_type']))
+                annotation_info = pycoco_utils.create_annotation_info(
+                    segmentation_id, im_id, category_info, binary_inst_mask_visib, bounding_box, mask_encoding_format='rle' if include_segmentation else None, tolerance=2, ignore=ignore_gt)
+            else:
+                if include_segmentation:
+                    raise RuntimeError(f'Binary segmentation mask "{mask_visib_p}" does not exist, but include_segmentation is True')
+                bounding_box = gt_info[idx]['bbox_obj']
+                width, height = dp_split['im_size']
+                area = bounding_box[2] * bounding_box[3]
+                annotation_info = {
+                    "id": segmentation_id,
+                    "image_id": im_id,
+                    "category_id": category_info,
+                    "iscrowd": 0,
+                    "area": int(area),
+                    "bbox": bounding_box,
+                    "width": width,
+                    "height": height
+                }
 
             if annotation_info is not None:
                 coco_scene_output["annotations"].append(annotation_info)
