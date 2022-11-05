@@ -88,6 +88,7 @@ def get_model_params(datasets_path, dataset_name, model_type=None):
     'hope': list(range(1, 29)),
     'jmas': [0],
     'synthetic_pbr': [0],
+    'event11': [0],
   }[dataset_name]
 
   # ID's of objects with ambiguous views evaluated using the ADI pose error
@@ -107,7 +108,8 @@ def get_model_params(datasets_path, dataset_name, model_type=None):
     'ycbv': [1, 13, 14, 16, 18, 19, 20, 21],
     'hope': None,  # Not defined yet.
     'jmas': None,
-    'synthetic_pbr': None
+    'synthetic_pbr': None,
+    'event11': None,
   }[dataset_name]
 
   # T-LESS includes two types of object models, CAD and reconstructed.
@@ -175,7 +177,7 @@ def get_split_params(datasets_path, dataset_name, split, split_type=None):
   elif dataset_name == 'itodd':
     gray_ext = '.tif'
     depth_ext = '.tif'
-  elif dataset_name == 'synthetic_pbr':
+  elif dataset_name == 'synthetic_pbr' or dataset_name == 'event11':
     rgb_ext = '.jpg'
 
   p['im_modalities'] = ['rgb', 'depth']
@@ -397,6 +399,16 @@ def get_split_params(datasets_path, dataset_name, split, split_type=None):
       'test': list(range(1000, 1040))
     }[split]
     p['im_size'] = (1500, 1500)
+
+    if split == 'test':
+      # todo
+      p['depth_range'] = (0.0, 0.0)
+      p['azimuth_range'] = (0, 0)
+      p['elev_range'] = (0, 0)
+
+  elif dataset_name == 'event11':
+    p['scene_ids'] = list(range(53125, 59000, 5))
+    p['im_size'] = (1280, 800)
 
     if split == 'test':
       # todo

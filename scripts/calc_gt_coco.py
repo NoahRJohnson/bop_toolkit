@@ -21,7 +21,7 @@ from bop_toolkit_lib import misc
 ################################################################################
 p = {
   # See dataset_params.py for options.
-  'dataset': 'jmas',
+  'dataset': 'event11',
 
   # Dataset split. Options: 'train', 'test'.
   'dataset_split': 'train',
