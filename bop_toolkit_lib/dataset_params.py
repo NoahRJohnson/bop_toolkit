@@ -395,8 +395,8 @@ def get_split_params(datasets_path, dataset_name, split, split_type=None):
   # synthetic PBR images created by VSI
   elif dataset_name == 'synthetic_pbr':
     p['scene_ids'] = {
-      'train': list(range(400)),
-      'test': list(range(1000, 1040))
+      'train': list(range(5000)),
+      'test': list(range(500))
     }[split]
     p['im_size'] = (1500, 1500)
 
